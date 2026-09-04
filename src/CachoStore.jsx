@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import "./admin.css";
 
 const FALLBACK = {
   updatedAt: "",
@@ -24,6 +25,8 @@ export default function CachoStore() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [cart, setCart] = useState({});
+  const [draftQty, setDraftQty] = useState({});
+  const [toast, setToast] = useState(null);
   const [adminUnlocked, setAdminUnlocked] = useState(loadSession);
   const [pin, setPin] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -50,15 +53,54 @@ export default function CachoStore() {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), 4500);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
   const products = catalog.products.filter((p) => p.active !== false);
   const categories = catalog.categories;
   const filtered = useMemo(() => products.filter((p) => (category === "All" || p.category === category) && p.name.toLowerCase().includes(search.toLowerCase())), [products, category, search]);
   const cartItems = products.filter((p) => cart[p.id]);
   const total = cartItems.reduce((sum, p) => sum + p.price * cart[p.id], 0);
   const itemCount = Object.values(cart).reduce((sum, q) => sum + q, 0);
+  const cartCategories = [...new Set(cartItems.map((p) => p.category).filter(Boolean))];
 
-  const add = (p) => setCart((c) => ({ ...c, [p.id]: Math.min(p.stock, (c[p.id] || 0) + 1) }));
-  const qty = (id, delta) => setCart((c) => { const p = products.find((x) => x.id === id); const next = Math.max(0, Math.min(p?.stock || 0, (c[id] || 0) + delta)); const n = { ...c }; if (!next) delete n[id]; else n[id] = next; return n; });
+  const getDraft = (p) => Number.isInteger(draftQty[p.id]) ? draftQty[p.id] : 1;
+  const setProductDraft = (p, value) => {
+    const max = Math.max(1, Number(p.stock) || 1);
+    const parsed = Number(value);
+    const next = Number.isFinite(parsed) ? Math.max(1, Math.min(max, Math.floor(parsed))) : 1;
+    setDraftQty((d) => ({ ...d, [p.id]: next }));
+  };
+
+  const add = (p) => {
+    const amount = getDraft(p);
+    setCart((c) => ({ ...c, [p.id]: Math.min(p.stock, (c[p.id] || 0) + amount) }));
+    setDraftQty((d) => ({ ...d, [p.id]: 1 }));
+    setToast({ id: p.id, name: p.name, quantity: amount });
+  };
+
+  const qty = (id, delta) => setCart((c) => {
+    const p = products.find((x) => x.id === id);
+    const next = Math.max(0, Math.min(p?.stock || 0, (c[id] || 0) + delta));
+    const n = { ...c };
+    if (!next) delete n[id]; else n[id] = next;
+    return n;
+  });
+
+  const undoAdd = () => {
+    if (!toast) return;
+    setCart((c) => {
+      const current = c[toast.id] || 0;
+      const next = Math.max(0, current - toast.quantity);
+      const n = { ...c };
+      if (!next) delete n[toast.id]; else n[toast.id] = next;
+      return n;
+    });
+    setToast(null);
+  };
 
   const openAdmin = () => { setLoginError(""); setPin(""); setView(adminUnlocked ? "admin" : "login"); };
   const unlock = (e) => {
@@ -80,15 +122,16 @@ export default function CachoStore() {
         {!adminUnlocked && <button className="nav-btn" onClick={openAdmin}>Admin</button>}
         {adminUnlocked && <button className={view === "admin" ? "nav-btn active" : "nav-btn"} onClick={() => setView("admin")}>Admin</button>}
         {adminUnlocked && <button className="lock-btn" onClick={lock}>Lock</button>}
-        <button className="cart-btn" onClick={() => setView("shop")}>Cart <b>{itemCount}</b></button>
+        <button className="cart-btn" onClick={() => document.querySelector(".order-panel")?.scrollIntoView({ behavior: "smooth", block: "center" })}>Cart <b>{itemCount}</b></button>
       </nav>
     </header>
 
-    {view === "settings" && adminUnlocked ? <main className="settings-page"><section className="settings-hero"><div><p className="eyebrow">CACHO STORE SETTINGS</p><h1>Store settings</h1><p>Private controls for the store owner. Product data is designed to come from Excel through the sync pipeline.</p></div></section><section className="settings-grid"><article className="settings-card"><span className="settings-icon">▤</span><h2>Excel catalog</h2><p>Your Excel workbook is the planned source of truth for product names, categories, wholesale prices, stock, and image URLs.</p><div className="status-row"><span>Connection</span><strong className="status-pending">Setup required</strong></div><div className="status-row"><span>Last catalog sync</span><strong>{updatedAt ? new Date(updatedAt).toLocaleString("en-PH") : "Not synced"}</strong></div></article><article className="settings-card"><span className="settings-icon">🔒</span><h2>Owner-only controls</h2><p>Admin access is required before private management tools are shown. Use Lock when you finish.</p><button className="secondary-btn" onClick={() => setView("admin")}>Open admin</button></article><article className="settings-card wide-card"><span className="settings-icon">↔</span><h2>How automatic sync will work</h2><div className="sync-steps"><div><b>1</b><span>Edit the Excel workbook in OneDrive/SharePoint.</span></div><div><b>2</b><span>Power Automate reads the ProductsTable and sends the rows to CACHO Store.</span></div><div><b>3</b><span>The sync endpoint updates <code>products.json</code>; Vercel then publishes the new catalog.</span></div></div><p className="muted">The Excel Online (Business) connector can read rows from an Excel table; its documentation also notes short backend delays, so updates are not necessarily instantaneous.</p></article></section></main> : view === "admin" && adminUnlocked ? <main className="admin-page"><section className="admin-hero"><div><p className="eyebrow">OWNER AREA</p><h1>Catalog control</h1><p>Excel is the source of truth. The website displays the synced catalog below so you can confirm what customers will see.</p></div></section><section className="admin-layout"><div><div className="admin-toolbar"><div className="search wide"><span>⌕</span><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search synced products..."/></div><span className="result-count">{products.length} products</span></div><div className="admin-list">{products.map((p) => <article className="admin-product" key={p.id}><div className="mini-image">{p.image ? <img src={p.image} alt=""/> : <span>{p.name.charAt(0)}</span>}</div><div className="admin-product-main"><div><small>{p.category} · {p.unit}</small><h3>{p.name}</h3></div><div className="admin-price"><span>Wholesale</span><strong>{peso(p.price)}</strong></div><div className="stock-editor"><span>Stock</span><b className="read-only-stock">{p.stock}</b></div><div className="admin-product-actions"><button onClick={() => setView("settings")}>Excel settings</button></div></div></article>)}</div></div></section></main> : <main>
+    {view === "settings" && adminUnlocked ? <main className="settings-page"><section className="settings-hero"><div><p className="eyebrow">CACHO STORE SETTINGS</p><h1>Store settings</h1><p>Private controls for the store owner. Product data is designed to come from Excel through the sync pipeline.</p></div></section><section className="settings-grid"><article className="settings-card"><span className="settings-icon">▤</span><h2>Excel catalog</h2><p>Your Excel workbook is the planned source of truth for product names, categories, wholesale prices, stock, and image URLs.</p><div className="status-row"><span>Connection</span><strong className="status-pending">Setup required</strong></div><div className="status-row"><span>Last catalog sync</span><strong>{updatedAt ? new Date(updatedAt).toLocaleString("en-PH") : "Not synced"}</strong></div></article><article className="settings-card"><span className="settings-icon">🔒</span><h2>Owner-only controls</h2><p>Admin access is required before private management tools are shown. Use Lock when you finish.</p><button className="secondary-btn" onClick={() => setView("admin")}>Open admin</button></article><article className="settings-card wide-card"><span className="settings-icon">↔</span><h2>How automatic sync will work</h2><div className="sync-steps"><div><b>1</b><span>Edit the Excel workbook in OneDrive/SharePoint.</span></div><div><b>2</b><span>Power Automate reads the ProductsTable and sends the rows to CACHO Store.</span></div><div><b>3</b><span>The sync endpoint updates <code>products.json</code>; Vercel then publishes the new catalog.</span></div></div><p className="muted">The Excel Online (Business) connector can read rows from an Excel table; updates may take a short time to propagate.</p></article></section></main> : view === "admin" && adminUnlocked ? <main className="admin-page"><section className="admin-hero"><div><p className="eyebrow">OWNER AREA</p><h1>Catalog control</h1><p>Excel is the source of truth. The website displays the synced catalog below so you can confirm what customers will see.</p></div></section><section className="admin-layout"><div><div className="admin-toolbar"><div className="search wide"><span>⌕</span><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search synced products..."/></div><span className="result-count">{products.length} products</span></div><div className="admin-list">{products.map((p) => <article className="admin-product" key={p.id}><div className="mini-image">{p.image ? <img src={p.image} alt=""/> : <span>{p.name.charAt(0)}</span>}</div><div className="admin-product-main"><div><small>{p.category} · {p.unit}</small><h3>{p.name}</h3></div><div className="admin-price"><span>Wholesale</span><strong>{peso(p.price)}</strong></div><div className="stock-editor"><span>Stock</span><b className="read-only-stock">{p.stock}</b></div><div className="admin-product-actions"><button onClick={() => setView("settings")}>Excel settings</button></div></div></article>)}</div></div></section></main> : <main>
       <section className="hero"><div className="hero-main"><p className="eyebrow">WELCOME TO CACHO STORE</p><h1>Wholesale essentials,<br/><em>better value.</em></h1><p className="hero-copy">Your reliable source for everyday grocery products. Browse wholesale prices and order exactly the quantity your store needs.</p><div className="hero-actions"><button onClick={() => document.querySelector(".products-anchor")?.scrollIntoView({ behavior: "smooth" })}>Browse products <span>→</span></button><span>Wholesale pricing on every product</span></div></div><div className="hero-card"><div className="hero-card-icon">▦</div><span>WHOLESALE ORDERS</span><strong>Buying for your own store?</strong><small>Search the catalog, choose your products, and enter the exact quantities you need.</small></div></section>
       <section className="toolbar"><div className="search"><span>⌕</span><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products..."/></div><div className="wholesale-badge"><span>✓</span> Wholesale prices</div></section>
       <div className="category-row"><button className={category === "All" ? "selected" : ""} onClick={() => setCategory("All")}>All</button>{categories.map((item) => <button key={item} className={category === item ? "selected" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div>
-      <section className="content-grid products-anchor"><div><div className="section-heading"><div><p className="eyebrow">WHOLESALE CATALOG</p><h2>Shop everyday essentials</h2></div><span>{filtered.length} products{loading ? " · loading" : ""}</span></div><div className="product-grid">{filtered.map((p) => <article className="product-card" key={p.id}><div className="product-image">{p.image ? <img src={p.image} alt={p.name}/> : <span>{p.name.charAt(0)}</span>}<small>{p.unit}</small></div><div className="product-info"><small className="product-category">{p.category}</small><h3>{p.name}</h3><div className="price-row"><div><span>Wholesale price</span><strong>{peso(p.price)}</strong></div><span className={p.stock < 30 ? "stock low" : "stock"}>{p.stock} available</span></div><button className="add-btn" disabled={!p.stock} onClick={() => add(p)}><span>+</span> {p.stock ? "Add to order" : "Out of stock"}</button></div></article>)}</div></div><aside className="order-panel"><div className="order-head"><div><p className="eyebrow">YOUR ORDER</p><h2>Wholesale order</h2></div><span>{itemCount} items</span></div>{cartItems.length === 0 ? <div className="empty"><div className="empty-icon">🛒</div><strong>Your order is empty</strong><p>Add products and set the exact quantity you need.</p></div> : <div className="order-items">{cartItems.map((p) => <div className="order-item" key={p.id}><div className="order-name"><strong>{p.name}</strong><small>{peso(p.price)} each</small></div><div className="qty"><button onClick={() => qty(p.id, -1)}>−</button><b>{cart[p.id]}</b><button onClick={() => qty(p.id, 1)}>+</button></div><strong className="line-total">{peso(p.price * cart[p.id])}</strong></div>)}</div>}<div className="order-total"><span>Total</span><strong>{peso(total)}</strong></div><button className="checkout" disabled={!itemCount}>Review order <span>→</span></button></aside></section>
+      <section className="content-grid products-anchor"><div><div className="section-heading"><div><p className="eyebrow">WHOLESALE CATALOG</p><h2>Shop everyday essentials</h2></div><span>{filtered.length} products{loading ? " · loading" : ""}</span></div><div className="product-grid">{filtered.map((p) => { const selected = getDraft(p); const inCart = cart[p.id] || 0; const remaining = Math.max(0, p.stock - inCart); const maxToAdd = remaining + inCart; return <article className="product-card" key={p.id}><div className="product-image">{p.image ? <img src={p.image} alt={p.name}/> : <span>{p.name.charAt(0)}</span>}<small>{p.unit}</small></div><div className="product-info"><small className="product-category">{p.category}</small><h3>{p.name}</h3><div className="price-row"><div><span>Wholesale price</span><strong>{peso(p.price)}</strong></div><span className={p.stock < 30 ? "stock low" : "stock"}>{p.stock} available</span></div><div className="product-buy-row"><div className="product-quantity" aria-label={`Quantity for ${p.name}`}><button type="button" onClick={() => setProductDraft(p, selected - 1)} disabled={selected <= 1}>−</button><input type="number" inputMode="numeric" min="1" max={Math.max(1, maxToAdd)} value={selected} onChange={(e) => setProductDraft(p, e.target.value)} aria-label={`Quantity of ${p.name}`}/><button type="button" onClick={() => setProductDraft(p, selected + 1)} disabled={selected >= Math.max(1, maxToAdd)}>+</button></div><button className="add-btn" disabled={!p.stock || inCart >= p.stock} onClick={() => add(p)}><span>+</span> {p.stock ? "Add to order" : "Out of stock"}</button></div></div></article>; })}</div></div><aside className="order-panel"><div className="order-head"><div><p className="eyebrow">YOUR ORDER</p><h2>Wholesale order</h2></div><span>{itemCount} items</span></div>{cartItems.length > 0 && <div className="cart-category-bar"><span className="cart-category-title">Categories</span>{cartCategories.map((item) => <span className="cart-category-pill" key={item}>{item}</span>)}</div>}{cartItems.length === 0 ? <div className="empty"><div className="empty-icon">🛒</div><strong>Your order is empty</strong><p>Add products and set the exact quantity you need.</p></div> : <div className="order-items">{cartItems.map((p) => <div className="order-item" key={p.id}><div className="order-name"><strong>{p.name}</strong><small>{peso(p.price)} each</small><small className="order-item-cat">{p.category}</small></div><div className="qty"><button onClick={() => qty(p.id, -1)}>−</button><b>{cart[p.id]}</b><button onClick={() => qty(p.id, 1)}>+</button></div><strong className="line-total">{peso(p.price * cart[p.id])}</strong></div>)}</div>}<div className="order-total"><span>Total</span><strong>{peso(total)}</strong></div><button className="checkout" disabled={!itemCount}>Review order <span>→</span></button></aside></section>
     </main>}
+    {toast && <div className="add-toast" role="status" aria-live="polite"><div className="add-toast-icon">✓</div><div className="add-toast-copy"><strong>{toast.name}</strong><span>{toast.quantity} {toast.quantity === 1 ? "item" : "items"} added to your order</span></div><button type="button" className="add-toast-undo" onClick={undoAdd}>Undo</button><button type="button" className="add-toast-close" onClick={() => setToast(null)} aria-label="Dismiss">×</button></div>}
   </div>;
 }
