@@ -17,11 +17,29 @@ const starterProducts = [
 const starterCategories = ["Noodles", "Drinks", "Household", "Coffee & Milk", "Canned Goods", "Snacks"];
 const peso = (value) => `₱${Number(value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const loadJson = (key, fallback) => { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } };
+const catalogLooksCorrupt = (list) => !Array.isArray(list) || list.length < 50 || list.some((p) => {
+  const name = String(p?.name || "");
+  const category = String(p?.category || "");
+  return name.length > 180 || (category && name.toLowerCase().split(category.toLowerCase()).length > 3);
+});
 const readAdminSession = () => { try { return sessionStorage.getItem(ADMIN_SESSION_KEY) === "unlocked"; } catch { return false; } };
 
 export default function App() {
   const [products, setProducts] = useState(() => loadJson(PRODUCTS_KEY, starterProducts));
   const [categories, setCategories] = useState(() => loadJson(CATEGORIES_KEY, starterCategories));
+  useEffect(() => {
+    fetch("/products.json", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((catalog) => {
+        if (!Array.isArray(catalog) || !catalog.length) return;
+        const current = loadJson(PRODUCTS_KEY, []);
+        if (catalogLooksCorrupt(current)) {
+          setProducts(catalog);
+          saveState(PRODUCTS_KEY, catalog);
+        }
+      })
+      .catch(() => {});
+  }, []);
   const [view, setView] = useState("shop");
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
