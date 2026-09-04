@@ -1,8 +1,9 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
+import StoreApp from "./StoreApp";
 import "./styles.css";
+import "./admin.css";
 
 createRoot(document.getElementById("root")).render(
-  <React.StrictMode><App /></React.StrictMode>
+  <React.StrictMode><StoreApp /></React.StrictMode>
 );
