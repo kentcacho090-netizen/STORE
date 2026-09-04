@@ -19,9 +19,25 @@ const displayName = (product) => {
   const name = String(product?.name || "Product").trim();
   const category = String(product?.category || "").trim();
   if (!category) return name;
-  const matches = name.toLowerCase().split(category.toLowerCase()).length - 1;
-  if (matches >= 2) {
-    const cleaned = name.split(new RegExp(category.replace(/[.*+?^$\\{}()|[\\]\\\\]/g, "\\\\const peso = (value) =>"), "ig")).join(" ").replace(/\\s+/g, " ").trim();
+  const lower = name.toLowerCase();
+  const cat = category.toLowerCase();
+  const count = lower.split(cat).length - 1;
+  if (count >= 2) {
+    const parts = [];
+    let rest = name;
+    let at = rest.toLowerCase().indexOf(cat);
+    while (at !== -1) {
+      parts.push(rest.slice(0, at));
+      rest = rest.slice(at + category.length);
+      at = rest.toLowerCase().indexOf(cat);
+    }
+    parts.push(rest);
+    const cleaned = parts.join(" ").split(" ").filter(Boolean).join(" ").trim();
+    return cleaned || "Product";
+  }
+  return name;
+};
+const peso = (value) =>"), "ig")).join(" ").replace(/\\s+/g, " ").trim();
     return cleaned || "Product";
   }
   return name;
