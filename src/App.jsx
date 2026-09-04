@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 const PRODUCTS_KEY = "cacho-store-products-v1";
 const CATEGORIES_KEY = "cacho-store-categories-v1";
 const ADMIN_SESSION_KEY = "cacho-store-admin-session-v1";
+const ADMIN_PIN = "2580";
 
 const starterProducts = [
   { id: 1, name: "Lucky Me! Pancit Canton", category: "Noodles", unit: "60g", price: 12.5, stock: 150, image: "" },
@@ -15,15 +16,16 @@ const starterProducts = [
 const starterCategories = ["Noodles", "Drinks", "Household", "Coffee & Milk", "Canned Goods", "Snacks"];
 const peso = (value) => `₱${Number(value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const loadJson = (key, fallback) => { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } };
+const readAdminSession = () => { try { return sessionStorage.getItem(ADMIN_SESSION_KEY) === "unlocked"; } catch { return false; } };
 
-export default function App() {
+export default function StoreApp() {
   const [products, setProducts] = useState(() => loadJson(PRODUCTS_KEY, starterProducts));
   const [categories, setCategories] = useState(() => loadJson(CATEGORIES_KEY, starterCategories));
   const [view, setView] = useState("shop");
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState({});
-  const [adminUnlocked, setAdminUnlocked] = useState(() => sessionStorage.getItem(ADMIN_SESSION_KEY) === "unlocked");
+  const [adminUnlocked, setAdminUnlocked] = useState(readAdminSession);
   const [adminPin, setAdminPin] = useState("");
   const [loginError, setLoginError] = useState("");
   const [editing, setEditing] = useState(null);
@@ -36,18 +38,22 @@ export default function App() {
   const total = cartItems.reduce((sum, p) => sum + cart[p.id] * p.price, 0);
   const itemCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
 
-  const saveState = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const saveState = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} };
   const add = (product) => setCart((current) => ({ ...current, [product.id]: Math.min(product.stock, (current[product.id] || 0) + 1) }));
   const changeQty = (id, amount) => setCart((current) => { const p = products.find((item) => item.id === id); const next = Math.max(0, Math.min(p?.stock ?? 0, (current[id] || 0) + amount)); const copy = { ...current }; if (!next) delete copy[id]; else copy[id] = next; return copy; });
 
   const unlockAdmin = (event) => {
-    event.preventDefault();
-    // Temporary local admin gate for the prototype. Replace with real server authentication before public production use.
-    const expectedPin = "2580";
-    if (adminPin === expectedPin) { sessionStorage.setItem(ADMIN_SESSION_KEY, "unlocked"); setAdminUnlocked(true); setLoginError(""); setAdminPin(""); }
-    else setLoginError("Incorrect admin PIN.");
+    event?.preventDefault();
+    const enteredPin = adminPin.replace(/\D/g, "").slice(0, 4);
+    if (enteredPin !== ADMIN_PIN) { setAdminPin(""); setLoginError("Incorrect PIN. Please try again."); return; }
+    try { sessionStorage.setItem(ADMIN_SESSION_KEY, "unlocked"); } catch {}
+    setAdminUnlocked(true);
+    setLoginError("");
+    setAdminPin("");
+    setView("admin");
   };
-  const lockAdmin = () => { sessionStorage.removeItem(ADMIN_SESSION_KEY); setAdminUnlocked(false); setView("shop"); };
+  const openAdmin = () => { setLoginError(""); setAdminPin(""); setView(adminUnlocked ? "admin" : "login"); };
+  const lockAdmin = () => { try { sessionStorage.removeItem(ADMIN_SESSION_KEY); } catch {} setAdminUnlocked(false); setEditing(null); setView("shop"); };
 
   const resetForm = () => { setEditing({ id: null, name: "", category: categories[0] || "Uncategorized", unit: "", price: "", stock: "", image: "" }); setImagePreview(""); };
   const startEdit = (product) => { setEditing({ ...product, price: String(product.price), stock: String(product.stock) }); setImagePreview(product.image || ""); window.scrollTo({ top: 0, behavior: "smooth" }); };
@@ -74,13 +80,13 @@ export default function App() {
       <button className="brand brand-button" onClick={() => setView("shop")}><div className="brand-mark">C</div><div><strong>CACHO STORE</strong><span>Wholesale Grocery Supplier</span></div></button>
       <nav className="top-actions">
         <button className={view === "shop" ? "nav-btn active" : "nav-btn"} onClick={() => setView("shop")}>Catalog</button>
-        {adminUnlocked ? <button className={view === "admin" ? "nav-btn active" : "nav-btn"} onClick={() => setView("admin")}>Manage Store</button> : <button className="nav-btn" onClick={() => setView("login")}>Admin</button>}
+        <button className={view === "admin" ? "nav-btn active" : "nav-btn"} onClick={openAdmin}>Admin</button>
         {adminUnlocked && <button className="lock-btn" onClick={lockAdmin}>Lock</button>}
         <button className="cart-btn" onClick={() => setView("shop")}>Cart <b>{itemCount}</b></button>
       </nav>
     </header>
 
-    {view === "login" ? <main className="login-page"><div className="login-card"><div className="login-icon">🔐</div><p className="eyebrow">CACHO STORE</p><h1>Admin access</h1><p>Only the store owner should use this area. Enter your admin PIN to manage products, prices, stock, and categories.</p><form onSubmit={unlockAdmin}><label>Admin PIN<input autoFocus type="password" inputMode="numeric" maxLength="12" value={adminPin} onChange={(e) => { setAdminPin(e.target.value); setLoginError(""); }} placeholder="Enter PIN" /></label>{loginError && <div className="login-error">{loginError}</div>}<button className="primary-btn full-btn" type="submit">Unlock admin</button></form><button className="back-btn" onClick={() => setView("shop")}>← Back to catalog</button></div></main> : view === "admin" && adminUnlocked ? <main className="admin-page">
+    {view === "login" ? <main className="login-page"><div className="login-card"><div className="login-icon">🔐</div><p className="eyebrow">CACHO STORE</p><h1>Admin access</h1><p>Only the store owner should use this area. Enter the 4-digit admin PIN to manage products, prices, stock, and categories.</p><form onSubmit={unlockAdmin}><label>Admin PIN<input autoFocus type="text" inputMode="numeric" pattern="[0-9]*" maxLength={4} autoComplete="off" value={adminPin} onChange={(e) => { setAdminPin(e.target.value.replace(/\D/g, "").slice(0, 4)); setLoginError(""); }} placeholder="••••" /></label>{loginError && <div className="login-error">{loginError}</div>}<button className="primary-btn full-btn" type="submit">Unlock admin</button></form><button className="back-btn" onClick={() => setView("shop")}>← Back to catalog</button></div></main> : view === "admin" && adminUnlocked ? <main className="admin-page">
       <section className="admin-hero"><div><p className="eyebrow">STORE MANAGEMENT</p><h1>Manage your products.</h1><p>Add products, change wholesale prices, update stock, upload photos, and keep the catalog current.</p></div><div className="admin-actions"><button className="primary-btn" onClick={resetForm}>+ Add product</button><button className="secondary-btn" onClick={exportProducts}>Export backup</button><label className="secondary-btn file-btn">Import backup<input type="file" accept="application/json" onChange={importProducts}/></label></div></section>
       <section className="admin-layout"><div><div className="admin-toolbar"><div className="search wide"><span>⌕</span><input value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} placeholder="Search products to edit..." /></div><span className="result-count">{adminProducts.length} products</span></div><div className="admin-list">{adminProducts.map((product) => <article className="admin-product" key={product.id}><div className="mini-image">{productImage(product)}</div><div className="admin-product-main"><div><small>{product.category} · {product.unit}</small><h3>{product.name}</h3></div><div className="admin-price"><span>Wholesale</span><strong>{peso(product.price)}</strong></div><div className="stock-editor"><span>Stock</span><div><button onClick={() => updateStock(product.id, -1)}>−</button><b>{product.stock}</b><button onClick={() => updateStock(product.id, 1)}>+</button></div></div><div className="admin-product-actions"><button onClick={() => startEdit(product)}>Edit</button><button className="danger" onClick={() => removeProduct(product)}>Delete</button></div></div></article>)}{!adminProducts.length && <div className="empty-admin">No products match your search.</div>}</div></div>
         <aside className="manager-panel">{editing ? <><div className="panel-head"><div><p className="eyebrow">PRODUCT EDITOR</p><h2>{editing.id ? "Edit product" : "Add product"}</h2></div><button className="close-btn" onClick={() => setEditing(null)}>×</button></div><form onSubmit={saveProduct} className="product-form"><label>Product name<input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="e.g. Lucky Me Pancit Canton" /></label><label>Category<select value={editing.category} onChange={(e) => setEditing({ ...editing, category: e.target.value })}>{categories.map((item) => <option key={item}>{item}</option>)}</select></label><label>Unit / size<input value={editing.unit} onChange={(e) => setEditing({ ...editing, unit: e.target.value })} placeholder="e.g. 60g, 1L, 1 box" /></label><div className="form-grid"><label>Wholesale price<input type="number" min="0" step="0.01" value={editing.price} onChange={(e) => setEditing({ ...editing, price: e.target.value })} /></label><label>Stock quantity<input type="number" min="0" step="1" value={editing.stock} onChange={(e) => setEditing({ ...editing, stock: e.target.value })} /></label></div><label>Product image<div className="upload-area" onClick={() => document.getElementById("product-image-upload")?.click()}>{imagePreview ? <img src={imagePreview} alt="Preview"/> : <><strong>Upload a photo</strong><span>PNG, JPG or WEBP</span></>}</div><input id="product-image-upload" className="hidden-file" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleImage}/></label><div className="form-actions"><button type="button" className="secondary-btn" onClick={() => setEditing(null)}>Cancel</button><button type="submit" className="primary-btn">Save product</button></div></form></> : <div className="panel-empty"><div className="panel-empty-icon">✎</div><h2>Product editor</h2><p>Choose a product to edit, or click <strong>Add product</strong> to create another item.</p></div>}</aside></section>
