@@ -1,31 +1,26 @@
-# CACHO STORE
+# CACHO Store
 
-Wholesale grocery ordering prototype for CACHO Store.
+Wholesale grocery catalog and store-management prototype for CACHO Store.
 
-## Current MVP
+## Current features
 
 - Wholesale-only product catalog
 - Product search and categories
-- Buyer quantity controls
-- Automatic wholesale order totals
-- Stock-aware ordering
-- **Manage Store** product editor
+- Buyer quantity controls and automatic totals
+- Product management area
 - Add, edit, and delete products
-- Change wholesale price and stock quantity
-- Upload product images
-- Create and remove categories
-- Export/import a JSON store backup
-- Responsive mobile layout
+- Update stock quickly
+- Change wholesale prices
+- Upload product photos
+- Add and remove categories
+- Export/import store backups
+- Admin access screen with session lock
 
-## Product management
+## Important security note
 
-Open **Manage Store** from the top navigation.
+The current admin PIN is a **prototype-only client-side lock**. It keeps ordinary visitors from opening the management screen, but it is **not secure enough for a real public production system** because the front-end code is public.
 
-You can change a product's wholesale price or stock, create new products, upload an image, and organize categories without editing the React source code.
-
-Product and category changes currently persist in the browser using `localStorage`. This makes the management tools functional for the current prototype, but the data is tied to the browser/device. The next production step should move products, orders, users, and inventory into a shared database with real authentication.
-
-Use **Export backup** regularly while the store is running on local browser storage.
+Before using this with real business data, replace the prototype PIN with server-side authentication (for example, Supabase Auth, Clerk, or a Vercel server-side login) and store products in a shared database.
 
 ## Run locally
 
