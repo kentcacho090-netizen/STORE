@@ -5,9 +5,7 @@ import "./stockSeed";
 import "./remoteCatalog";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./styles.css";
-import "./hero.css";
+import App from "./AppClean";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode><App /></React.StrictMode>
