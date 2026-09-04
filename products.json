@@ -1,0 +1,13 @@
+{
+  "updatedAt": "2026-09-05T00:00:00.000Z",
+  "source": "CACHO Store starter catalog",
+  "categories": ["Noodles", "Drinks", "Household", "Coffee & Milk", "Canned Goods", "Snacks"],
+  "products": [
+    { "id": 1, "name": "Lucky Me! Pancit Canton", "category": "Noodles", "unit": "60g", "price": 12.5, "stock": 150, "image": "", "active": true },
+    { "id": 2, "name": "Coca-Cola", "category": "Drinks", "unit": "1.5L", "price": 75, "stock": 48, "image": "", "active": true },
+    { "id": 3, "name": "Surf Powder Detergent", "category": "Household", "unit": "1kg", "price": 108, "stock": 23, "image": "", "active": true },
+    { "id": 4, "name": "Bear Brand Fortified", "category": "Coffee & Milk", "unit": "1kg", "price": 265, "stock": 31, "image": "", "active": true },
+    { "id": 5, "name": "Argentina Corned Beef", "category": "Canned Goods", "unit": "175g", "price": 34, "stock": 72, "image": "", "active": true },
+    { "id": 6, "name": "Jack 'n Jill Piattos", "category": "Snacks", "unit": "85g", "price": 27, "stock": 95, "image": "", "active": true }
+  ]
+}
