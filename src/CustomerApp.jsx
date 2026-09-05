@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
+import { IMAGE_MAP } from "./imageSeed";
 import "./styles.css";
 import "./customer-polish.css";
 
 const PRODUCTS_URL = "/api/products";
 const peso = (value) => `₱${Number(value || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 function readJson(key, fallback) { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } }
-function cleanProduct(p) { return { ...p, name:String(p?.name||"Product").trim(), category:String(p?.category||"Other").trim(), unit:String(p?.unit||"Each"), price:Number(p?.price||0), stock:Math.max(0,Number(p?.stock||0)), image:String(p?.image||""), active:p?.active !== false }; }
+function resolveProductImage(p) {
+  const key = `${p?.name || ""}__${p?.unit || ""}`;
+  const mapped = IMAGE_MAP[key] || IMAGE_MAP[p?.name];
+  const current = String(p?.image || "");
+  if (mapped && (!current || current.includes("placehold.co"))) return mapped;
+  return current || mapped || "";
+}
+function cleanProduct(p) { return { ...p, name:String(p?.name||"Product").trim(), category:String(p?.category||"Other").trim(), unit:String(p?.unit||"Each"), price:Number(p?.price||0), stock:Math.max(0,Number(p?.stock||0)), image:resolveProductImage(p), active:p?.active !== false }; }
 function normalize(list) { const seen=new Set(); return (Array.isArray(list)?list:[]).map(cleanProduct).filter(p=>p.active).filter(p=>{const k=`${p.id}__${p.unit}`;if(seen.has(k))return false;seen.add(k);return true;}); }
 
 export default function CustomerApp(){
@@ -24,7 +32,7 @@ export default function CustomerApp(){
   const saveCart=(id,n)=>setCart(c=>{const x={...c};if(n<=0)delete x[id];else x[id]=n;return x;});
   const add=(p)=>{const requested=getQty(p),current=Number(cart[p.id]||0),available=Math.max(0,p.stock-current),amount=Math.min(requested,available);if(!amount||addingId===p.id)return;setAddingId(p.id);saveCart(p.id,current+amount);setToast({name:p.name,quantity:amount});setQty(p,1);setTimeout(()=>setAddingId(null),450);};
   useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(null),4500);return()=>clearTimeout(t);},[toast]);
-  const productImage=p=>p.image?<img src={p.image} alt={p.name} loading="lazy"/>:<span>{p.name.charAt(0)}</span>;
+  const productImage=p=>{const src=resolveProductImage(p);return src?<img src={src} alt={p.name} loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display="none";e.currentTarget.parentElement?.classList.add("image-fallback");}}/>:<span>{p.name.charAt(0)}</span>;};
   return <div className="app">
     <header className="topbar"><button className="brand brand-button" onClick={()=>window.scrollTo({top:0,behavior:"smooth"})} aria-label="CACHO Store home"><div className="brand-mark">C</div><div><strong>CACHO STORE</strong><span>Wholesale Grocery Supplier</span></div></button><nav className="top-actions"><button className="nav-btn active">Catalog</button><button id="cacho-my-orders" className="nav-btn" type="button">My Orders <b id="cacho-orders-count">0</b></button><button className="cart-btn" onClick={()=>document.querySelector(".order-panel")?.scrollIntoView({behavior:"smooth",block:"center"})}>Cart <b>{itemCount}</b></button></nav></header>
     <main>
