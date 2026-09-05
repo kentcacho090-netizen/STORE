@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-05T01:21:18.597Z",
+  "updatedAt": "2026-09-05T01:35:39.996Z",
   "source": "CACHO Store expanded starter catalog based on publicly visible Suy Sing and Ever Supermarket products",
   "categories": [
     "Baby Care",
@@ -50,7 +50,7 @@
       "category": "Rice, Pasta & Noodles",
       "unit": "80g",
       "price": 20,
-      "stock": 1111,
+      "stock": 0,
       "image": "https://placehold.co/600x600/f6f1e8/25211d?text=Lucky%20Me%20Pancit%20Canton",
       "active": true
     },
@@ -59,8 +59,8 @@
       "name": "Lucky Me! Pancit Canton Sweet & Spicy",
       "category": "Rice, Pasta & Noodles",
       "unit": "80g",
-      "price": 13.5,
-      "stock": 0,
+      "price": 5,
+      "stock": 10,
       "image": "https://placehold.co/600x600/f6f1e8/25211d?text=Lucky%20Me%20Sweet%20%26%20Spicy",
       "active": true
     },
