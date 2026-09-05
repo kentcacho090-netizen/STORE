@@ -28,6 +28,12 @@ const IMAGE_MAP = {
   "Argentina Meat Loaf__100g": "https://www.citimartdelivery.com.ph/cdn/shop/files/1023075.jpg",
   "Argentina Chicken Luncheon Meat__340g": "https://ever.ph/cdn/shop/files/100000096159-Argentina-Chicken-Luncheon-Meat-340g-260508.jpg?v=1778232441&width=1445",
   "Jack 'n Jill Piattos": "https://merkadoph.se/cdn/shop/files/piattos-cheese-85g.jpg?v=1705102773&width=1445",
+  "Jack 'n Jill Nova__78g": "https://www.promiselandmart.com/cdn/shop/products/8_90225481-e211-4573-8eb3-d5dfa0d90fc7_%7Bwidth%7Dx.jpg?v=1602838184",
+  "Rebisco Crackers__250g": "https://cdn.salla.sa/OWqYo/2hJmY0hwCV841DLSz7vzywxU4otwoNmQZ683hL3o.jpg",
+  "Oishi Prawn Crackers__90g": "https://nordictindahan.fi/cdn/shop/files/oishi-prawn-crackers-90g.png?v=1758618478",
+  "Nagaraya Cracker Nuts__50g": "https://img06.weeecdn.com/item/image/725/275/B245D9CBB989C8.jpg%21c750x0.jpeg",
+  "Choco Mucho__32g": "https://aaashoppingcenter.ph/cdn/shop/files/item_7_a3eb5ea4-7c37-4c4f-8b0c-9cb2db44ddbe.jpg?v=1747363875",
+  "Choc-Nut__24pcs": "https://assets.benable.com/rec_object_photos/53528008/full_size/8a4c417eee16974b1831.jpeg",
 
   "Nissin Ramen Beef__55g": "https://unlistore.ph/images/thumbs/0024614_nissin-ramen-55g-beef-chicken-creamy-seafood-seafood-spicy-beef-spicy-seafood-nis36_510.jpeg",
   "Nissin Ramen Beef": "https://unlistore.ph/images/thumbs/0024614_nissin-ramen-55g-beef-chicken-creamy-seafood-seafood-spicy-beef-spicy-seafood-nis36_510.jpeg",
@@ -57,9 +63,10 @@ const IMAGE_MAP = {
   "Great Taste White Coffee__30g": "https://i.ebayimg.com/images/g/NH4AAOSwz99n5o0c/s-l400.jpg",
   "Nescafe Classic__25g": "https://www.malvarmarketing.com/sites/default/files/styles/product/public/products/4800361420594.png?itok=nYUT78vz",
   "Dutch Mill Yoghurt Drink Mixed Fruit__90ml": "https://www.promiselandmart.com/cdn/shop/products/MI_1024x1024%402x.jpg?v=1597461827",
-  "Nagaraya Cracker Nuts__50g": "https://img06.weeecdn.com/item/image/725/275/B245D9CBB9893C8.jpg%21c750x0.jpeg",
-  "Oishi Prawn Crackers__90g": "https://nordictindahan.fi/cdn/shop/files/oishi-prawn-crackers-90g.png?v=1758618478",
-  "Milo Chocolate Drink__24g": "https://static.wixstatic.com/media/720a1c_f2da96d3a24547df91e7083db440137c~mv2.png/v1/fill/w_518%2Ch_607%2Cal_c%2Clg_1%2Cq_85%2Cenc_avif%2Cquality_auto/720a1c_f2da96d3a24547df91e7083db440137c~mv2.png"
+  "Milo Chocolate Drink__24g": "https://static.wixstatic.com/media/720a1c_f2da96d3a24547df91e7083db440137c~mv2.png/v1/fill/w_518%2Ch_607%2Cal_c%2Clg_1%2Cq_85%2Cenc_avif%2Cquality_auto/720a1c_f2da96d3a24547df91e7083db440137c~mv2.png",
+  "Pride Detergent Powder Washing Machine__500g": "https://cdn.store-assets.com/s/377840/i/16424916.jpeg",
+  "Champion Detergent Powder Regular Supra Clean__105g": "https://aaashoppingcenter.ph/cdn/shop/files/Untitleddesign-2025-06-03T113802.850.png?v=1748921922",
+  "Smart Dishwashing Paste Kalamansi__200g": "https://sukigrocer.com/cdn/shop/files/3785d3feffb256d00bea21d6860a5ac8.jpg?v=1702543912"
 };
 
 try {
