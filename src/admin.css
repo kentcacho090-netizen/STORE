@@ -40,3 +40,41 @@
   .admin-product-actions{grid-template-columns:1fr 1fr}
   .login-card{padding:24px 18px}
 }
+
+/* Accessibility pass: larger, higher-visibility admin controls */
+.login-card label,.product-form label{font-size:12px;letter-spacing:.01em}
+.login-card>p:not(.eyebrow),.settings-card p:not(.eyebrow),.admin-hero p:not(.eyebrow){font-size:14px}
+.login-error{font-size:13px}
+.nav-btn,.lock-btn{font-size:12px}
+.primary-btn,.secondary-btn{font-size:13px;padding:12px 16px}
+.result-count{font-size:13px}
+.admin-product-main small{font-size:11px}
+.admin-product-main h3{font-size:15px;line-height:1.35}
+.admin-price span,.stock-editor>span{font-size:11px}
+.admin-price strong{font-size:18px}
+.stock-editor b{font-size:13px}
+.stock-editor button{width:32px;height:32px;font-size:16px}
+.admin-product-actions button{font-size:12px;padding:10px 12px}
+.product-form input,.product-form select{font-size:14px;padding:12px 13px}
+.product-form label{gap:7px}
+.upload-area strong{font-size:14px}
+.upload-area span{font-size:12px}
+.category-chip,.add-category{font-size:12px}
+.panel-empty p,.empty-admin{font-size:13px}
+.settings-status{font-size:12px}
+@media(max-width:760px){
+  .login-card h1{font-size:34px}
+  .login-card input{font-size:17px}
+  .settings-hero h1,.admin-hero h1{font-size:34px}
+  .settings-card h2{font-size:22px}
+  .settings-card p:not(.eyebrow),.admin-hero p:not(.eyebrow){font-size:14px}
+  .admin-product-main h3{font-size:15px}
+  .admin-product-main small{font-size:12px}
+  .admin-price strong{font-size:19px}
+  .admin-product-actions button{font-size:12px;min-height:42px}
+  .stock-editor button{width:36px;height:36px}
+  .stock-editor b{font-size:14px}
+  .product-form label{font-size:13px}
+  .product-form input,.product-form select{font-size:16px;min-height:46px}
+  .primary-btn,.secondary-btn{font-size:14px;min-height:44px}
+}
