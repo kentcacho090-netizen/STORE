@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-05T01:17:14.540Z",
+  "updatedAt": "2026-09-05T01:21:18.597Z",
   "source": "CACHO Store expanded starter catalog based on publicly visible Suy Sing and Ever Supermarket products",
   "categories": [
     "Baby Care",
@@ -50,7 +50,7 @@
       "category": "Rice, Pasta & Noodles",
       "unit": "80g",
       "price": 20,
-      "stock": 0,
+      "stock": 1111,
       "image": "https://placehold.co/600x600/f6f1e8/25211d?text=Lucky%20Me%20Pancit%20Canton",
       "active": true
     },
