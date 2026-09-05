@@ -3,7 +3,6 @@ import "./catalogSeed";
 import "./imageSeed";
 import "./stockSeed";
 import "./checkoutFix";
-import "./categoryScrollFix";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./CustomerD1";
