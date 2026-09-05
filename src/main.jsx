@@ -5,7 +5,7 @@ import "./stockSeed";
 import "./checkoutFix";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import App from "./CustomerApp";
+import App from "./CustomerD1";
 import "./product-polish.css";
 import "./customerOrders.css";
 import "./customerOrders";
