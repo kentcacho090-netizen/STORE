@@ -1,18 +1,16 @@
 function syncQuantityLabels() {
-  document.querySelectorAll(".product-buy-row").forEach((row) => {
-    const input = row.querySelector(".product-quantity input");
-    const button = row.querySelector(".add-btn");
-    if (!input || !button) return;
+  document.querySelectorAll(".add-btn").forEach((button) => {
+    if (button.textContent.includes("Out of stock")) return;
+    const card = button.closest("article") || button.parentElement;
+    const input = card?.querySelector("input[type=number]");
+    if (!input) return;
     const value = Math.max(1, Number(input.value) || 1);
-    const disabled = button.disabled && !button.textContent.includes("Out of stock");
-    if (!button.textContent.includes("Out of stock")) {
-      button.textContent = disabled ? `+ Add ${value} to order` : `+ Add ${value} to order`;
-    }
+    button.textContent = `+ Add ${value} to order`;
   });
 }
 
 document.addEventListener("input", (event) => {
-  if (event.target.closest(".product-quantity")) syncQuantityLabels();
+  if (event.target.matches("input[type=number]")) syncQuantityLabels();
 });
 
 document.addEventListener("click", (event) => {
