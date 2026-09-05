@@ -9,6 +9,7 @@ import App from "./AppClean";
 import "./product-polish.css";
 import "./orderBridge";
 import "./orderBridge.css";
+import "./storeTools";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode><App /></React.StrictMode>
