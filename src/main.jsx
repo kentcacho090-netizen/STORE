@@ -7,6 +7,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./CustomerApp";
 import "./product-polish.css";
+import "./customerOrders.css";
 import "./customerOrders";
 
 createRoot(document.getElementById("root")).render(
