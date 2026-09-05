@@ -1,10 +1,14 @@
 const PRODUCTS_KEY = "cacho-store-products-v1";
 
-// Public product photos matched to the product name + exact unit/size whenever possible.
-// A name-only fallback is used only when there is no size-specific match.
+// Public product photos matched to product name + exact unit/size whenever possible.
+// Exact package images are preferred over generic placeholders.
 const IMAGE_MAP = {
   "Lucky Me! Pancit Canton": "https://cdn.mafrservices.com/sys-master-root/hfe/hfa/14787587145758/595516_main.jpg",
-  "Lucky Me! Pancit Canton Original": "https://cdn.mafrservices.com/sys-master-root/hfe/hfa/14787587145758/595516_main.jpg",
+  "Lucky Me! Pancit Canton Original": "https://shopmetro.ph/angeles-supermarket/wp-content/uploads/2024/05/SM102169577-1-7.jpg",
+  "Lucky Me! Pancit Canton Sweet & Spicy": "https://shoplilimart.com/cdn/shop/files/LuckyMePancitCantonSweet_SpicyFlavor-2.12oz.webp?v=1722184768&width=1800",
+  "Lucky Me! Pancit Canton Kalamansi": "https://snfood.gr/SNFOOD_media/2025/03/10041277_lm-pc-kalamansi-80g.png",
+  "Lucky Me! Pancit Canton Sweet & Spicy Kasalo Pack": "https://luckyme.ph/cdn/shop/files/lucky-me-pancit-canton-sweet-spicy-kasalo.webp",
+  "Lucky Me! Pancit Canton Kalamansi Kasalo Pack": "https://luckyme.ph/cdn/shop/files/lucky-me-pancit-canton-kalamansi-kasalo.webp",
 
   "Coca-Cola": "https://www.promiselandmart.com/cdn/shop/files/COKE_BOTTLED_1.5L_1024x1024%402x.jpg?v=1710311027",
   "Coca-Cola Original Taste__1.5L": "https://www.promiselandmart.com/cdn/shop/files/COKE_BOTTLED_1.5L_1024x1024%402x.jpg?v=1710311027",
@@ -19,6 +23,8 @@ const IMAGE_MAP = {
   "Argentina Corned Beef": "https://k2pharmacy.ph/cdn/shop/files/ArgentinaCornedBeef175g1-fotor-20240627154056_grande.jpg?v=1720416375",
   "Jack 'n Jill Piattos": "https://merkadoph.se/cdn/shop/files/piattos-cheese-85g.jpg?v=1705102773&width=1445",
 
+  "Nissin Ramen Beef__55g": "https://primomart.ph/cdn/shop/files/4800016551574_a399f665-d8d6-4f32-a728-c3711d24c3ba_700x700.jpg?v=1754892411",
+  "Nissin Ramen Beef": "https://primomart.ph/cdn/shop/files/4800016551574_a399f665-d8d6-4f32-a728-c3711d24c3ba_700x700.jpg?v=1754892411",
   "Nissin Ramen Chicken__55g": "https://primomart.ph/cdn/shop/files/4800016551574_a399f665-d8d6-4f32-a728-c3711d24c3ba_700x700.jpg?v=1754892411",
   "Nissin Ramen Chicken": "https://primomart.ph/cdn/shop/files/4800016551574_a399f665-d8d6-4f32-a728-c3711d24c3ba_700x700.jpg?v=1754892411",
   "Nissin Cup Noodles Seafood__40g": "https://ursuki.com/cdn/shop/files/URC20210113_03.jpg?crop=center&height=1200&v=1762938554&width=1200",
@@ -39,13 +45,11 @@ const IMAGE_MAP = {
 try {
   const raw = localStorage.getItem(PRODUCTS_KEY);
   const products = raw ? JSON.parse(raw) : null;
-
   if (Array.isArray(products)) {
     const next = products.map((product) => {
       const key = `${product?.name || ""}__${product?.unit || ""}`;
       const image = IMAGE_MAP[key] || IMAGE_MAP[product?.name];
-      if (!image) return product;
-      return { ...product, image };
+      return image ? { ...product, image } : product;
     });
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(next));
   }
